@@ -1,0 +1,9 @@
+services:
+  short-time-code:
+    hostname: short-time-code
+    build:
+      dockerfile: ./dev.Dockerfile
+    ports:
+      - 3000:80
+    volumes:
+      - ./src:/src
