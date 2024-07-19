@@ -33,14 +33,25 @@ jobs:
         id: git_tag
         run: echo "::set-output name=TAG::$(git describe --tags --abbrev=0)"
 
+      - name: Remove 'release/' prefix from tag
+        id: version
+        run: |
+          TAG=${{ steps.git_tag.outputs.TAG }}
+          VERSION=${TAG#release/}
+          echo "::set-output name=VERSION::$VERSION"
+
+      - name: Extract repository name
+        id: repo_name
+        run: echo "::set-output name=NAME::$(basename ${{ github.repository }})"
+
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/short-time-code:latest
-            ${{ secrets.DOCKER_HUB_USERNAME }}/short-time-code:${{ steps.git_tag.outputs.TAG }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ steps.repo_name.outputs.NAME }}:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ steps.repo_name.outputs.NAME }}:${{ steps.version.outputs.VERSION }}
           file: ./release.Dockerfile
 
       - name: Logout from Docker Hub
