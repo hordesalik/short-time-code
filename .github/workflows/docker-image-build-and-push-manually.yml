@@ -29,12 +29,18 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+      - name: Extract Git tag
+        id: git_tag
+        run: echo "::set-output name=TAG::$(git describe --tags --abbrev=0)"
+
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/short-time-code:latest
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/short-time-code:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/short-time-code:${{ steps.git_tag.outputs.TAG }}
           file: ./release.Dockerfile
 
       - name: Logout from Docker Hub
